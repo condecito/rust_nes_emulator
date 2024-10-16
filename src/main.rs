@@ -138,7 +138,6 @@ fn main() {
     let mut screen_state = [0 as u8; 32 * 3 * 32];
     let mut rng = rand::thread_rng();
 
-    // run the game cycle
     cpu.run_with_callback(move |cpu| {
         handle_user_input(cpu, &mut event_pump);
 
