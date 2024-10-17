@@ -1,6 +1,7 @@
 use crate::arquitecture::opcodes;
 use bitflags::bitflags;
 use std::collections::HashMap;
+
 bitflags! {
     /// # Status Register (P) http://wiki.nesdev.com/w/index.php/Status_flags
     ///
@@ -40,7 +41,7 @@ pub struct CPU {
 }
 
 #[derive(Debug)]
-#[allow(non_camel_case_types)]
+
 pub enum AddressingMode {
     Immediate,
     ZeroPage,
@@ -252,7 +253,6 @@ impl CPU {
         self.register_y = 0;
         self.stack_pointer = STACK_RESET;
         self.status = CpuFlags::from_bits_truncate(0b100100);
-        // self.memory = [0; 0xFFFF];
 
         self.program_counter = self.mem_read_u16(0xFFFC);
     }
@@ -265,8 +265,6 @@ impl CPU {
         self.status.remove(CpuFlags::CARRY)
     }
 
-    /// note: ignoring decimal mode
-    /// http://www.righto.com/2012/12/the-6502-overflow-flag-explained.html
     fn add_to_register_a(&mut self, data: u8) {
         let sum = self.register_a as u16
             + data as u16
@@ -669,7 +667,6 @@ impl CPU {
                     self.dey();
                 }
 
-                /* CMP */
                 0xc9 | 0xc5 | 0xd5 | 0xcd | 0xdd | 0xd9 | 0xc1 | 0xd1 => {
                     self.compare(&opcode.mode, self.register_a);
                 }
@@ -682,7 +679,6 @@ impl CPU {
                 /* CPX */
                 0xe0 | 0xe4 | 0xec => self.compare(&opcode.mode, self.register_x),
 
-                /* JMP Absolute */
                 0x4c => {
                     let mem_address = self.mem_read_u16(self.program_counter);
                     self.program_counter = mem_address;
@@ -691,11 +687,6 @@ impl CPU {
                 /* JMP Indirect */
                 0x6c => {
                     let mem_address = self.mem_read_u16(self.program_counter);
-                    // let indirect_ref = self.mem_read_u16(mem_address);
-                    //6502 bug mode with with page boundary:
-                    //  if address $3000 contains $40, $30FF contains $80, and $3100 contains $50,
-                    // the result of JMP ($30FF) will be a transfer of control to $4080 rather than $5080 as you intended
-                    // i.e. the 6502 took the low byte of the address from $30FF and the high byte from $3000
 
                     let indirect_ref = if mem_address & 0x00FF == 0x00FF {
                         let lo = self.mem_read(mem_address);
